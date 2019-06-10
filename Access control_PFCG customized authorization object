@@ -1,0 +1,25 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_AUTH_PFCG'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'CDS view with pfcg access'
+define view ZCDS_AUTH_PFCG
+  as select from scarr
+{
+  key carrid,
+      carrname,
+      currcode,
+      url
+};
+
+===========================================================================================================================================
+@EndUserText.label: 'Demo PFCG access control'
+@MappingRole: true
+define role Zcds_Role_Pfcg {
+    grant
+        select
+            on
+                ZCDS_AUTH_PFCG
+                    where
+                        (carrid) =
+  aspect pfcg_auth (zs_carrid, carrid, actvt='03'); }
