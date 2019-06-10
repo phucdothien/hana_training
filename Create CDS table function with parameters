@@ -1,0 +1,81 @@
+@ClientDependent: true
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'BP Table fucnction'
+define table function ZTF_BP_DETAIL
+with parameters @Environment.systemField: #CLIENT
+                  clnt:abap.clnt
+  returns { client:s_mandt;
+            partner_guid:bu_partner_guid;
+            partset_guid:crmt_object_guid;
+            partner_no: crmt_partner_no;
+            bp_guid: bu_partner_guid;
+            title:ad_title;
+            name: bu_name1tx;
+          }
+  implemented by method
+    zcl_amdp_bp_detail=>crmd_partner_but000;
+   
+ =========================================================================================================================================
+ class zcl_amdp_bp_detail definition
+  public
+  final
+  create public .
+
+  public section.
+  INTERFACES if_amdp_marker_hdb.
+  CLASS-METHODS crmd_partner_but000 FOR TABLE FUNCTION ztf_bp_Detail.
+  protected section.
+  private section.
+endclass.
+
+
+
+class zcl_amdp_bp_detail implementation.
+METHOD crmd_partner_but000
+        BY DATABASE FUNCTION FOR HDB
+        LANGUAGE SQLSCRIPT
+        OPTIONS READ-ONLY
+        USING crmd_partner but000.
+    RETURN SELECT sc.client as client,
+                  sc.partner_guid as partner_guid,
+                  sc.guid as partset_guid,
+                  sc.partner_no as partner_no,
+                  sp.partner_guid as bp_guid,
+                  sp.title as title,
+                  sp.name1_text as name
+                  FROM crmd_partner AS sc
+                    INNER JOIN but000 AS sp ON sc.client = sp.client AND
+                                              sc.partner_no = sp.partner_guid
+                    WHERE sc.client = :clnt AND
+                          sc.partner_fct = '00000001'
+                    ORDER BY sc.client;
+  ENDMETHOD.
+endclass.
+
+========================================================================================================================================
+@AbapCatalog.sqlViewName: 'ZDDLS_BP'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Partner detail'
+define view Z_c_partner
+  as select from crmd_orderadm_h
+    inner join   crmd_link                   as _link on  crmd_orderadm_h.guid = _link.guid_hi
+                                                      and _link.objtype_hi     = '05'
+                                                      and _link.objtype_set    = '07'
+    inner join   ZTF_BP_DETAIL( clnt: '100') as _bp   on _link.guid_set = _bp.partset_guid
+{
+  key crmd_orderadm_h.guid,
+      --_link.objtype_hi as header_type,
+      --_link.objtype_set as item_type,
+      _bp.bp_guid,
+      _bp.partner_no,
+      _bp.name,
+      case _bp.title
+        when '0001' then 'Ms.'
+        when '0002' then 'Mr.'
+        when '0003' then 'Company'
+        when '0004' then 'Mr and Mrs'
+        else 'Unknown'
+      end as title
+}
