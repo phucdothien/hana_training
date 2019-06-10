@@ -1,0 +1,104 @@
+method experimentset_create_entity.
+**try.
+*CALL METHOD SUPER->EXPERIMENTSET_CREATE_ENTITY
+*  EXPORTING
+*    IV_ENTITY_NAME          =
+*    IV_ENTITY_SET_NAME      =
+*    IV_SOURCE_NAME          =
+*    IT_KEY_TAB              =
+**    io_tech_request_context =
+*    IT_NAVIGATION_PATH      =
+**    io_data_provider        =
+**  importing
+**    er_entity               =
+*    .
+** catch /iwbep/cx_mgw_busi_exception .
+** catch /iwbep/cx_mgw_tech_exception .
+**endtry.
+    data: ls_data       type zxeq1_dexprmnt01.
+    io_data_provider->read_entry_data( importing es_data = er_entity ).
+    "Insert data in database
+    move-corresponding er_entity to ls_data.
+    insert zxeq1_dexprmnt01
+      from @ls_data.
+    if sy-subrc <> 0.
+       DATA: ls_message           TYPE          scx_t100key.
+      ls_message-msgid = 'ZODATA_MESS'.
+      ls_message-msgno = '001'.
+      ls_message-attr1 = 'Key used already exists. New record creation failed!'.
+
+      RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
+        EXPORTING
+          textid = ls_message.
+    endif.
+  endmethod.
+  =========================================================================================================================================
+   method experimentset_delete_entity.
+**try.
+*CALL METHOD SUPER->EXPERIMENTSET_DELETE_ENTITY
+*  EXPORTING
+*    IV_ENTITY_NAME          =
+*    IV_ENTITY_SET_NAME      =
+*    IV_SOURCE_NAME          =
+*    IT_KEY_TAB              =
+**    io_tech_request_context =
+*    IT_NAVIGATION_PATH      =
+*    .
+** catch /iwbep/cx_mgw_busi_exception .
+** catch /iwbep/cx_mgw_tech_exception .
+**endtry.
+    data: ls_data       type zcl_zodata_cds_mpc=>ts_experiment.
+    "Convert keys to data
+    call method io_tech_request_context->get_converted_keys
+      importing
+        es_key_values = ls_data.
+    "Delete data from database
+    delete from zxeq1_dexprmnt01
+      where uname = @ls_data-uname.
+    if sy-subrc <> 0.
+      data: ls_message           type          scx_t100key.
+      ls_message-msgid = 'ZODATA_MESS'.
+      ls_message-msgno = '001'.
+      ls_message-attr1 = 'Selected key does not exists. Delete failed!'.
+
+      raise exception type /iwbep/cx_mgw_busi_exception
+        exporting
+          textid = ls_message.
+    endif.
+  endmethod.
+  =====================================================================================================================================
+   method experimentset_update_entity.
+**try.
+*CALL METHOD SUPER->EXPERIMENTSET_UPDATE_ENTITY
+*  EXPORTING
+*    IV_ENTITY_NAME          =
+*    IV_ENTITY_SET_NAME      =
+*    IV_SOURCE_NAME          =
+*    IT_KEY_TAB              =
+**    io_tech_request_context =
+*    IT_NAVIGATION_PATH      =
+**    io_data_provider        =
+**  importing
+**    er_entity               =
+*    .
+** catch /iwbep/cx_mgw_busi_exception .
+** catch /iwbep/cx_mgw_tech_exception .
+**endtry.
+    data: ls_data       type zxeq1_dexprmnt01.
+    data: lo_message_container type ref to /iwbep/if_message_container.
+    io_data_provider->read_entry_data( importing es_data = er_entity ).
+    "Update data in database
+    move-corresponding er_entity to ls_data.
+
+    update zxeq1_dexprmnt01
+      from @ls_data.
+    if sy-subrc <> 0.
+      data: ls_message           type          scx_t100key.
+      ls_message-msgid = 'ZODATA_MESS'.
+      ls_message-msgno = '000'.
+
+      raise exception type /iwbep/cx_mgw_busi_exception
+        exporting
+          textid = ls_message.
+    endif.
+  endmethod.
