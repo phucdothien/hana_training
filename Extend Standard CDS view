@@ -1,0 +1,8 @@
+@AbapCatalog.sqlViewAppendName: 'ZDDLS_EXT_CDS'
+@EndUserText.label: 'Demo CDS View Extension'
+extend view sepm_sddl_salesorder_head with ZCDS_DEMO_EXT_CDS_VIEW
+{
+  overall_status,
+  payment_terms,
+  payment_method
+}
