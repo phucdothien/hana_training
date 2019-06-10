@@ -1,0 +1,24 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_AUTH_LIT'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'CDS view with literal conditions'
+define view ZCDS_AUTH_LITERAL
+  as select from scarr
+{
+  key carrid,
+      carrname,
+      currcode,
+      url
+};
+===========================================================================================================================================
+@EndUserText.label: 'Demo literal condition access control'
+@MappingRole: true
+define role Zcds_Role_Literal {
+    grant
+        select
+            on
+                zcds_auth_literal
+                    where carrid = 'LH';
+                        
+}
