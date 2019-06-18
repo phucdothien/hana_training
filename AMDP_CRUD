@@ -1,0 +1,139 @@
+class zcl_amdp_crud definition
+  public
+  final
+  create public .
+
+  public section.
+    types: tt_table type table of zxeq1_dexprmnt01.
+    interfaces if_amdp_marker_hdb.
+    methods create_entity
+      importing value(entity) type tt_table
+*      exporting value(message) type string
+      raising   cx_amdp_error.
+    methods delete_entity
+      importing value(uname_del) type uname
+                value(mandt_del) type mandt
+      exporting value(message)   type string
+      raising   cx_amdp_error.
+    methods update_entity
+      importing value(uname_upd) type uname
+                value(date_upd)  type dats
+                value(time_upd)  type tims
+                value(user_upd)  type mandt
+      raising   cx_amdp_error.
+  protected section.
+  private section.
+endclass.
+
+
+
+class zcl_amdp_crud implementation.
+  method create_entity
+  by database procedure
+  for hdb language sqlscript
+  using zxeq1_dexprmnt01.
+    insert into zxeq1_dexprmnt01 select * from :entity;
+  endmethod.
+
+  method delete_entity
+  by database procedure
+  for hdb language sqlscript
+  using zxeq1_dexprmnt01.
+    declare numberofentities number(5);
+    select count (*) into numberofentities from zxeq1_dexprmnt01 where uname = :uname_del and mandt = :mandt_del;
+    if numberofentities <> 0
+    then
+        delete from zxeq1_dexprmnt01 where uname = :uname_del and mandt = :mandt_del;
+        select count (*) into numberofentities from zxeq1_dexprmnt01 where uname = :uname_del and mandt = :mandt_del;
+        if numberofentities = 0
+        then
+        message = 'Entity has been deleted successfully.';
+        end if;
+    else
+    message = 'Your entried value is not valid.';
+    end if;
+  endmethod.
+
+  method update_entity
+  by database procedure
+  for hdb language sqlscript
+  using zxeq1_dexprmnt01.
+    update zxeq1_dexprmnt01 set uname = :uname_upd, dats = :date_upd, tims = :time_upd where uname = :uname_upd and mandt = :user_upd ;
+  endmethod.
+endclass.
+========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zpg_amdp_crud
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zpg_amdp_crud.
+selection-screen begin of block block1 with frame title text-001.
+parameters: uname type zxeq1_dexprmnt01-uname,
+            date  type zxeq1_dexprmnt01-dats,
+            time  type zxeq1_dexprmnt01-tims,
+            mandt type zxeq1_dexprmnt01-mandt.
+selection-screen end of block block1.
+
+selection-screen begin of block block2 with frame title text-002.
+parameters: unam_del type zxeq1_dexprmnt01-uname,
+            mand_del type zxeq1_dexprmnt01-mandt.
+selection-screen end of block block2.
+
+selection-screen begin of block block3 with frame title text-003.
+parameters: unam_upd type zxeq1_dexprmnt01-uname,
+            date_upd type zxeq1_dexprmnt01-dats,
+            time_upd type zxeq1_dexprmnt01-tims,
+            mand_upd type zxeq1_dexprmnt01-mandt.
+selection-screen end of block block3.
+
+data: r_amdp    type ref to zcl_amdp_crud,
+      it_entity type table of zxeq1_dexprmnt01,
+      wa_entity like line of it_entity,
+      message   type string.
+.
+
+
+create object r_amdp.
+
+if uname is  not initial.
+  wa_entity-uname = uname.
+  wa_entity-dats = date.
+  wa_entity-tims = time.
+  wa_entity-mandt = mandt.
+
+  append wa_entity to it_entity.
+
+  try.
+      call method r_amdp->create_entity
+        exporting
+          entity = it_entity.
+      write: /'Entity has been created successfully'.
+    catch cx_amdp_error into data(lv_exp).
+      write lv_exp->get_text( ).
+  endtry.
+endif.
+
+if unam_del is not initial.
+  call method r_amdp->delete_entity
+    exporting
+      uname_del = unam_del
+      mandt_del = mand_del
+    importing
+      message   = message.
+  write: message.
+endif.
+
+if unam_upd is not initial.
+  try.
+     call method r_amdp->update_entity
+        exporting
+          uname_upd = unam_upd
+          date_upd  = date_upd
+          time_upd  = time_upd
+          user_upd  = mand_upd.
+          write: /'Entity has been updated successfully'.
+    catch cx_amdp_error into lv_exp.
+      write lv_exp->get_text( ).
+  endtry.
+endif.
