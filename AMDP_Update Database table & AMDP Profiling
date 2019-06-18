@@ -1,3 +1,36 @@
+class zcl_amdp_sale_order definition
+  public
+  final
+  create public .
+
+  public section.
+    interfaces if_amdp_marker_hdb.
+    class-methods: copy_so_table
+      raising cx_amdp_error.
+  protected section.
+  private section.
+endclass.
+class zcl_amdp_sale_order implementation.
+
+  method copy_so_table by database procedure for hdb language sqlscript using snwd_so_i zsnwd_so_i.
+    lt_so = select * from snwd_so_i;
+    insert into zsnwd_so_i  select * from :lt_so;
+  endmethod.
+endclass.
+========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zpg_amdp_so
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_amdp_so.
+
+try.
+    call method zcl_amdp_sale_order=>copy_so_table.
+    write: /'Table has been copied successfully.'.
+  catch cx_amdp_error into data(lv_exp).
+    write lv_exp->get_text( ).
+endtry.
 **********************************************************************************************************************************************************************************************************
 *&Class definition
 **********************************************************************************************************************************************************************************************************
