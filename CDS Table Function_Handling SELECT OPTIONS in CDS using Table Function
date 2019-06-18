@@ -42,7 +42,7 @@ endclass.
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-report ztest_amdp_sel_opt.
+report zhana_pg_amdp_sel_opt.
 data : l_matnr type matnr,
        lt_tab  type table of ztf_sel_opt,
        l_where type string.
