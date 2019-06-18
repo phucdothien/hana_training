@@ -1,0 +1,36 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_SO_PARA'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'CDS View for sales order with Parameter'
+define view ZCDS_SO_PARA
+    with parameters 
+    //@Environment.systemField: #SYSTEM_DATE
+    Exchange_date: abap.dats
+ as select from snwd_so
+  inner join snwd_so_i on snwd_so.node_key = snwd_so_i.parent_key
+{
+      //SNWD_SO
+  key snwd_so.node_key,
+      //key snwd_so_i.client        as alias1,
+  key snwd_so_i.node_key       as node_key_i,
+
+      @Semantics.amount.currencyCode: 'Currency'
+      @DefaultAggregation: #SUM
+      snwd_so_i.net_amount,
+      @Semantics.currencyCode
+      snwd_so_i.currency_code  as Currency,
+      @Semantics.amount.currencyCode: 'Tcurrency'
+      @DefaultAggregation: #SUM
+      currency_conversion(
+      amount => snwd_so_i.net_amount,
+      source_currency => snwd_so_i.currency_code,
+      target_currency => cast('AUD' as abap.cuky),
+      exchange_rate_date => $parameters.Exchange_date
+      )                        as net_amount_eur,
+      @Semantics.currencyCode
+       cast('AUD' as abap.cuky) as Tcurrency,
+       :Exchange_date as Ex_Date
+}
+
+
