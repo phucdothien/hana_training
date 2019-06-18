@@ -38,7 +38,7 @@ endclass.
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-report zpg_amdp_test.
+report zhana_pg_amdp_test.
 data lv_bukrs type bukrs value '0001'.
 try.
     call method zcl_amdp_template=>get_company_name
