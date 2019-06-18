@@ -67,7 +67,7 @@ endclass.
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-report zpg_amdp_crud.
+report zhana_pg_amdp_crud.
 selection-screen begin of block block1 with frame title text-001.
 parameters: uname type zxeq1_dexprmnt01-uname,
             date  type zxeq1_dexprmnt01-dats,
