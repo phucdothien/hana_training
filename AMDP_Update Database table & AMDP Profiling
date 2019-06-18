@@ -127,7 +127,7 @@ endclass.
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-report zpg_amdp_so_compare.
+report zhana_pg_amdp_so_compare.
 parameters: old_curr type zsnwd_so_i-currency_code,
             new_curr type zsnwd_so_i-currency_code,
             records  type i.
