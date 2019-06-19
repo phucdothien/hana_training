@@ -1,0 +1,26 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_CLNT_HNDL'
+@AccessControl.authorizationCheck: #NOT_REQUIRED 
+@ClientHandling.type: #CLIENT_DEPENDENT 
+@ClientHandling.algorithm: #AUTOMATED 
+define view ZCDS_CLIENT_HANDLING
+as select from 
+    spfli 
+    { 
+      key spfli.carrid, 
+      key spfli.connid, 
+          spfli.cityfrom, 
+          spfli.cityto 
+          
+    }
+==========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zhana_pg_client_test
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_client_test.
+types lt type zcds_client_handling client specified clnt.
+data lt type table of lt.
+
+select * from ZDDLS_CLNT_HNDL using client '100' into table @lt.
+write: /'end'.
