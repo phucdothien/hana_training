@@ -1,0 +1,118 @@
+<edmx:Edmx
+    xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"
+    xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+    xmlns:sap="http://www.sap.com/Protocols/SAPData" Version="1.0">
+    <edmx:Reference
+        xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="./IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='LOCAL')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common"/>
+    </edmx:Reference>
+    <edmx:Reference
+        xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="./IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='LOCAL')/$value">
+        <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="Capabilities"/>
+    </edmx:Reference>
+    <edmx:Reference
+        xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="./IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='LOCAL')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Communication.v1" Alias="Communication"/>
+    </edmx:Reference>
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema
+            xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="ZDEMO_C_SALESORDER_CDS" xml:lang="en" sap:schema-version="1">
+            <EntityType Name="ZDEMO_C_SALESORDERType" sap:label="ZDEMO_C_SALESORDER" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SalesOrderID"/>
+                </Key>
+                <Property Name="Set_overall_status_to_paid_ac" Type="Edm.Boolean" sap:label="Dyn. Action Control" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SalesOrderID" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Sales Order ID" sap:quickinfo="EPM: Sales Order Number"/>
+                <Property Name="BusinessPartnerID" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Business Partner ID" sap:quickinfo="EPM: Business Partner ID"/>
+                <Property Name="CurrencyCode" Type="Edm.String" MaxLength="5" sap:label="Currency Code" sap:quickinfo="EPM: Currency Code" sap:semantics="currency-code"/>
+                <Property Name="GrossAmount" Type="Edm.Decimal" Precision="16" Scale="3" sap:label="Gross Amount" sap:quickinfo="EPM: Total Gross Amount"/>
+                <Property Name="NetAmount" Type="Edm.Decimal" Precision="16" Scale="3" sap:label="Net Amount" sap:quickinfo="EPM: Total Net Amount"/>
+                <Property Name="TaxAmount" Type="Edm.Decimal" Precision="16" Scale="3" sap:label="Tax Amount" sap:quickinfo="EPM: Total Tax Amount"/>
+                <Property Name="LifecycleStatus" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="Lifecycle Status" sap:quickinfo="EPM: Sales Order Lifecycle Status"/>
+                <NavigationProperty Name="to_Item" Relationship="ZDEMO_C_SALESORDER_CDS.assoc_9EE8D942E0CF6F305E59CC8090D77B51" FromRole="FromRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51" ToRole="ToRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51"/>
+            </EntityType>
+            <EntityType Name="ZDEMO_C_SALESORDER_ITEMType" sap:label="ZDEMO_C_SALESORDER_ITEM" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SalesOrderID"/>
+                    <PropertyRef Name="SalesOrderItemID"/>
+                    <PropertyRef Name="CurrencyCode"/>
+                    <PropertyRef Name="GrossAmount"/>
+                    <PropertyRef Name="NetAmount"/>
+                    <PropertyRef Name="TaxAmount"/>
+                </Key>
+                <Property Name="SalesOrderID" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Sales Order ID" sap:quickinfo="EPM: Sales Order Number" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="SalesOrderItemID" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Item Position" sap:quickinfo="EPM: Sales Order Item Position" sap:creatable="false" sap:updatable="false"/>
+                <Property Name="CurrencyCode" Type="Edm.String" Nullable="false" MaxLength="5" sap:label="Currency Code" sap:quickinfo="EPM: Currency Code" sap:semantics="currency-code"/>
+                <Property Name="GrossAmount" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="CurrencyCode" sap:label="Gross Amount" sap:quickinfo="EPM: Total Gross Amount"/>
+                <Property Name="NetAmount" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="CurrencyCode" sap:label="Net Amount" sap:quickinfo="EPM: Total Net Amount"/>
+                <Property Name="TaxAmount" Type="Edm.Decimal" Nullable="false" Precision="16" Scale="3" sap:unit="CurrencyCode" sap:label="Tax Amount" sap:quickinfo="EPM: Total Tax Amount"/>
+                <NavigationProperty Name="to_SalesOrder" Relationship="ZDEMO_C_SALESORDER_CDS.assoc_9EE8D942E0CF6F305E59CC8090D77B51" FromRole="ToRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51" ToRole="FromRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51"/>
+            </EntityType>
+            <Association Name="assoc_9EE8D942E0CF6F305E59CC8090D77B51" sap:content-version="1">
+                <End Type="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDERType" Multiplicity="1" Role="FromRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51"/>
+                <End Type="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDER_ITEMType" Multiplicity="*" Role="ToRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51"/>
+                <ReferentialConstraint>
+                    <Principal Role="FromRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51">
+                        <PropertyRef Name="SalesOrderID"/>
+                    </Principal>
+                    <Dependent Role="ToRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51">
+                        <PropertyRef Name="SalesOrderID"/>
+                    </Dependent>
+                </ReferentialConstraint>
+            </Association>
+            <EntityContainer Name="ZDEMO_C_SALESORDER_CDS_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="ZDEMO_C_SALESORDER" EntityType="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDERType" sap:searchable="true" sap:content-version="1"/>
+                <EntitySet Name="ZDEMO_C_SALESORDER_ITEM" EntityType="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDER_ITEMType" sap:searchable="true" sap:content-version="1"/>
+                <AssociationSet Name="assoc_9EE8D942E0CF6F305E59CC8090D77B51" Association="ZDEMO_C_SALESORDER_CDS.assoc_9EE8D942E0CF6F305E59CC8090D77B51" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="ZDEMO_C_SALESORDER" Role="FromRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51"/>
+                    <End EntitySet="ZDEMO_C_SALESORDER_ITEM" Role="ToRole_assoc_9EE8D942E0CF6F305E59CC8090D77B51"/>
+                </AssociationSet>
+                <FunctionImport Name="A41426E0EAA9E1Set_overall_status_to_paid" ReturnType="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDERType" EntitySet="ZDEMO_C_SALESORDER" m:HttpMethod="POST" sap:action-for="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDERType" sap:applicable-path="Set_overall_status_to_paid_ac">
+                    <Parameter Name="SalesOrderID" Type="Edm.String" Mode="In" MaxLength="10"/>
+                </FunctionImport>
+            </EntityContainer>
+            <Annotations
+                xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDER_CDS_Entities/ZDEMO_C_SALESORDER">
+                <Annotation Term="Capabilities.FilterRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonFilterableProperties">
+                            <Collection>
+                                <PropertyPath>Set_overall_status_to_paid_ac</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="Capabilities.SortRestrictions">
+                    <Record>
+                        <PropertyValue Property="NonSortableProperties">
+                            <Collection>
+                                <PropertyPath>Set_overall_status_to_paid_ac</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations
+                xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDERType">
+                <Annotation Term="Common.SemanticKey">
+                    <Collection>
+                        <PropertyPath>SalesOrderID</PropertyPath>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations
+                xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="ZDEMO_C_SALESORDER_CDS.ZDEMO_C_SALESORDER_ITEMType">
+                <Annotation Term="Common.SemanticKey">
+                    <Collection>
+                        <PropertyPath>SalesOrderItemID</PropertyPath>
+                        <PropertyPath>SalesOrderID</PropertyPath>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <atom:link
+                xmlns:atom="http://www.w3.org/2005/Atom" rel="self" href="./sap/ZDEMO_C_SALESORDER_CDS/$metadata"/>
+                <atom:link
+                    xmlns:atom="http://www.w3.org/2005/Atom" rel="latest-version" href="./sap/ZDEMO_C_SALESORDER_CDS/$metadata"/>
+                </Schema>
+            </edmx:DataServices>
+        </edmx:Edmx>
