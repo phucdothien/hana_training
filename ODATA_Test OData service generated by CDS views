@@ -1,0 +1,14 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_ODATA_DEMO'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Odata service on ABAP CDS view'
+
+//@OData.publish: true
+define view ZODATA_DEMO
+  as select from zxeq1_dexprmnt01 as Data
+{
+  key Data.uname,
+      Data.dats,
+      Data.tims
+}

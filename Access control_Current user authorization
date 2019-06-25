@@ -1,0 +1,23 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_AUTH_USER'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Demo CDS view with user authorization'
+define view ZCDS_AUTH_USER
+  as select from abdocmode
+{
+  key uname,
+  key langu,
+      flag
+};
+
+===========================================================================================================================================
+@EndUserText.label: 'Demo access control with user authorization'
+@MappingRole: true
+define role Zcds_Role_User {
+    grant
+        select
+            on
+                zcds_auth_user
+                    where
+                        uname ?= aspect user; }

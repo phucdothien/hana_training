@@ -1,0 +1,54 @@
+class zcl_amdp_template definition
+  public
+  final
+  create public .
+
+  public section.
+  types: tt_company_name type table of t001.
+    interfaces if_amdp_marker_hdb.
+    class-methods get_company_name
+      importing value(company_code) type bukrs
+*      exporting value(et_company_name) type tt_company_name
+      exporting value(company_name) type butxt
+      raising   cx_amdp_error.
+  protected section.
+  private section.
+endclass.
+
+
+
+class zcl_amdp_template implementation.
+  method get_company_name
+  by database procedure
+  for hdb language sqlscript
+  options read-only
+  using t001.
+    --> SQLScript
+
+--   et_company_name = select *  from T001 where bukrs = :company_code;
+     select butxt into "COMPANY_NAME" from T001 where bukrs = :company_code and mandt = '100';
+
+    --< SQLScript
+  endmethod.
+endclass.
+
+===========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zpg_amdp_test
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_amdp_test.
+data lv_bukrs type bukrs value '0001'.
+try.
+    call method zcl_amdp_template=>get_company_name
+      exporting
+        company_code = lv_bukrs
+      importing
+"        et_company_name = data(lv_butxt).
+        company_name = data(lv_butxt).
+  catch cx_amdp_error into data(lv_exp).
+    write lv_exp->get_text( ).
+endtry.
+write: lv_butxt.
+write: /'End'.

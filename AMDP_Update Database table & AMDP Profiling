@@ -1,0 +1,195 @@
+class zcl_amdp_sale_order definition
+  public
+  final
+  create public .
+
+  public section.
+    interfaces if_amdp_marker_hdb.
+    class-methods: copy_so_table
+      raising cx_amdp_error.
+  protected section.
+  private section.
+endclass.
+class zcl_amdp_sale_order implementation.
+
+  method copy_so_table by database procedure for hdb language sqlscript using snwd_so_i zsnwd_so_i.
+    lt_so = select * from snwd_so_i;
+    insert into zsnwd_so_i  select * from :lt_so;
+  endmethod.
+endclass.
+========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zpg_amdp_so
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_amdp_so.
+
+try.
+    call method zcl_amdp_sale_order=>copy_so_table.
+    write: /'Table has been copied successfully.'.
+  catch cx_amdp_error into data(lv_exp).
+    write lv_exp->get_text( ).
+endtry.
+**********************************************************************************************************************************************************************************************************
+*&Class definition
+**********************************************************************************************************************************************************************************************************
+class zcl_amdp_analyze definition
+  public
+  final
+  create public .
+  public section.
+    interfaces:
+      if_amdp_marker_hdb,
+      if_oo_adt_classrun.
+    types:
+             tt_so type table of zsnwd_so_i.
+    class-methods:
+      get_item
+        importing
+                  value(old_currency) type currency
+                  value(new_currency) type currency
+                  value(records)      type integer
+        exporting
+                  value(new_result)   type tt_so
+                  value(count)        type integer
+                  value(interval)     type float
+        raising   cx_amdp_execution_error,
+      convert_currency
+        importing
+                  value(old_result) type tt_so
+                  value(currency)   type currency
+        exporting
+                  value(new_result) type tt_so
+        raising   cx_amdp_execution_error.
+  protected section.
+  private section.
+endclass.
+
+class zcl_amdp_analyze implementation.
+
+  method get_item
+  by database procedure for hdb
+  language sqlscript
+  using
+  zsnwd_so_i
+  zcl_amdp_analyze=>convert_currency .
+    declare v_count integer;
+    declare v_i integer;
+    declare lv_count int := 0;
+--    declare interval float;
+    declare start_time datetime;
+    declare end_time datetime;
+      start_time = current_timestamp;
+      old_result = select * from zsnwd_so_i where currency_code = :old_currency limit :records;
+      call "ZCL_AMDP_ANALYZE=>CONVERT_CURRENCY"( old_result=>:old_result, currency=>new_currency, new_result=>new_result);
+      result_a = select * from :new_result;
+
+      update zsnwd_so_i as a set currency_code_amdp = :result_a.currency_code_amdp, gross_amount_amdp = :result_a.gross_amount_amdp
+      from zsnwd_so_i a, :result_a
+      where a.node_key = :result_a.node_key;
+
+      select count(*) as f_count into lv_count  from zsnwd_so_i where currency_code_amdp = :new_currency;
+      count = :lv_count;
+      end_time = current_timestamp;
+      interval = nano100_between ( :start_time, :end_time );
+  endmethod.
+
+  method convert_currency
+    by database procedure
+    for hdb
+    language sqlscript
+    options read-only.
+    declare today date;
+   declare new_currency nvarchar(3);
+    select current_date into today from dummy;
+    new_currency := :currency;
+    new_result = select
+        client,
+        node_key,
+        parent_key,
+        so_item_pos,
+        product_guid,
+        note_guid,
+        currency_code,
+        gross_amount,
+        net_amount,
+        tax_amount,
+        item_atp_status,
+        op_item_pos,
+        _dataaging,
+         dummy,
+        :new_currency as currency_code_amdp,
+        convert_currency(
+            "AMOUNT" =>gross_amount,
+            "SOURCE_UNIT"=>currency_code,
+            "TARGET_UNIT"=>:new_currency,
+            "REFERENCE_DATE"=>:today,
+            "CLIENT"=>'100',
+            "ERROR_HANDLING"=> 'set_to_null',
+            "SCHEMA"=>current_schema
+         ) as gross_amount_amdp,
+        currency_code_abap,
+        gross_amount_abap
+        from :old_result;
+  endmethod.
+
+  method if_oo_adt_classrun~main.
+    try.
+        me->get_item(
+            exporting
+              old_currency = 'USD'
+              new_currency = 'CAD'
+              records = 100000
+            importing
+              new_result = data(lt_result)
+              count = data(lv_count)
+              interval = data(lv_interval) )
+              .
+
+      catch cx_amdp_execution_error into data(lx_amdp).
+        out->write( lx_amdp->get_longtext( ) ).
+    endtry.
+    out->write( lv_count ).
+     out->write( lv_interval ).
+  endmethod.
+endclass.
+=========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report ZPG_CDS_TASK2
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_amdp_so_compare.
+parameters: old_curr type zsnwd_so_i-currency_code,
+            new_curr type zsnwd_so_i-currency_code,
+            records  type i.
+"Type declaration
+types: gty_so type table of zsnwd_so_i.
+
+"Data declaration
+data: zit2  type gty_so,
+      wa_so type line of gty_so.
+
+select
+     *
+  from zsnwd_so_i
+  where currency_code = @old_curr
+  into corresponding fields of table @zit2
+  up to @records rows.
+
+loop at zit2 into wa_so.
+  wa_so-currency_code_abap = new_curr.
+  call function 'CONVERT_AMOUNT_TO_CURRENCY'
+    exporting
+*     DATE             = SY-DATUM
+      foreign_currency = wa_so-currency_code
+      foreign_amount   = wa_so-gross_amount
+      local_currency   = wa_so-currency_code_abap
+    importing
+      local_amount     = wa_so-gross_amount_abap.
+  update zsnwd_so_i from wa_so.
+  clear wa_so.
+endloop.
+commit work.
+write: /'end'.

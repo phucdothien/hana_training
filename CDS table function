@@ -1,0 +1,55 @@
+@ClientDependent: false
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Substring Values AMDP Table Function'
+define table function ZSTRING_AMDP_TF
+returns {
+  id: string10;
+  id_desc: string40;
+  required_value: string40;
+  
+} 
+implemented by method zcl_amdp_string_operation=>zstringdata_string_operation;
+
+===========================================================================================================================================
+class zcl_amdp_string_operation definition
+  public
+  final
+  create public .
+
+  public section.
+    interfaces if_amdp_marker_hdb.
+    class-methods zstringdata_string_operation for table function zstring_amdp_tf.
+  protected section.
+  private section.
+endclass.
+
+
+
+class zcl_amdp_string_operation implementation.
+  method zstringdata_string_operation
+    by database function for hdb
+    language sqlscript
+    options read-only
+    using zstringdata.
+    return select id as id,
+    id_desc as id_desc,
+    substr_before(substr_after(id_desc,'_' ),'.' ) as required_value
+    from zstringdata;
+
+endmethod.
+endclass.
+
+========================================================================================================================================
+@AbapCatalog.sqlViewName: 'ZDDLS_SUBSTRING'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Substring values amdp table function'
+define view ZCDS_SUBSTRING_FUNC_AMDP
+  as select from zstringdata as _main
+    inner join   ZSTRING_AMDP_TF _amdp on _main.id = _amdp.id
+{
+  key _main.id,
+      _main.id_desc,
+      _amdp.required_value
+}

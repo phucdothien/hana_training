@@ -1,0 +1,64 @@
+@EndUserText.label: 'Table function with select option'
+define table function ZTF_SEL_OPT
+with parameters sel_opt : abap.char(1000)
+returns {
+ mandt : abap.clnt;
+ matnr : matnr;
+ maktx : maktx;
+  
+}
+implemented by method zcl_adt=>get_material;
+
+===========================================================================================================================================
+class zcl_adt definition
+  public
+  final
+  create public .
+
+  public section.
+    interfaces : if_amdp_marker_hdb.
+    class-methods : get_material for table function ztf_sel_opt.
+  protected section.
+  private section.
+endclass.
+
+
+
+class zcl_adt implementation.
+  method get_material by database function for hdb language sqlscript options read-only using mara makt.
+    lt_mara = apply_filter ( mara, :sel_opt);
+
+    return select mara.mandt, mara.matnr, makt.maktx
+    from :lt_mara mara inner join makt makt
+    on mara.mandt = makt.mandt and
+    mara.matnr = makt.matnr and
+    makt.spras = 'F';
+  endmethod.
+endclass.
+
+===========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report ZTEST_AMDP_SEL_OPT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_amdp_sel_opt.
+data : l_matnr type matnr,
+       lt_tab  type table of ztf_sel_opt,
+       l_where type string.
+select-options : s_matnr for l_matnr.
+
+
+start-of-selection.
+
+  l_where = cl_shdb_seltab=>combine_seltabs(
+                                        exporting it_named_seltabs =
+                                              value #( ( name = 'MATNR' dref = ref #( s_matnr[] ) ) )
+                                              iv_client_field = 'MANDT'
+                                  ).
+
+
+
+
+select * from ztf_sel_opt( sel_opt = @l_where ) into table @lt_tab.
+WRITE L_WHERE.

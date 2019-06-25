@@ -1,0 +1,17 @@
+@AbapCatalog.sqlViewName: 'YDDLS_WO_STAT_TX'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+@EndUserText.label: 'CDS View for work order status and text'
+define view YCDSV_WO_STAT_txt
+  as select from    jcds
+    left outer join tj02t on jcds.stat = tj02t.istat
+{     //JCDS
+ key jcds.objnr,
+ key jcds.stat,
+ key jcds.chgnr,
+      jcds.inact,
+      //TJ02T
+      tj02t.txt04,
+      tj02t.txt30
+}

@@ -1,0 +1,164 @@
+*&---------------------------------------------------------------------*
+*& Report ZPG_CDS_MARA_2
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_cds_task2_mara.
+tables: mara, makt.
+
+types: begin of ty_mara,
+         matnr type matnr,
+         maktx type makt-maktx,
+       end of ty_mara.
+data: it_mara type table of ty_mara,
+      wa_mara type ty_mara.
+
+"Traditional approach
+select mr~matnr,
+       mk~maktx from mara as mr
+       inner join makt as mk
+       on mr~matnr = mk~matnr
+       where mk~spras = 'E'
+       order by mr~matnr ascending
+       into table @it_mara.
+
+
+loop at it_mara into wa_mara.
+  call function 'CONVERSION_EXIT_ALPHA_OUTPUT'
+    exporting
+      input  = wa_mara-matnr
+    importing
+      output = wa_mara-matnr.
+  modify it_mara from wa_mara.
+  clear wa_mara.
+endloop.
+write: /'end'.
+==========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report ZPG_CDS_MARA
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_cds_task2_mara_cds.
+
+tables: mara, makt.
+
+types: begin of ty_mara,
+         material_code type matnr,
+         material_text type makt-maktx,
+       end of ty_mara.
+data: it_mara type table of ty_mara,
+      wa_mara type ty_mara.
+
+"Using ABAP Core Data Service (CDS)
+select *
+  from zddls_mara
+  order by primary key
+  into corresponding fields of table @it_mara.
+write: /'End'.
+========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report ZPG_CDS_TASK2
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_cds_task2_so.
+"Parameter declaration
+parameters:
+p_record type i DEFAULT 500000.
+
+"Type declaration
+types: begin of  gty_sales_ord,
+         node_key       type snwd_node_key,
+         node_key_i     type snwd_node_key,
+         currency       type snwd_curr_code,
+         net_amount     type snwd_ttl_net_amount,
+         net_amount_eur type snwd_ttl_net_amount,
+         tcurrency      type snwd_curr_code,
+       end of gty_sales_ord.
+
+"Data declaration
+data: zit2  type table of gty_sales_ord,
+      wa_so type gty_sales_ord.
+
+data: zinterval1 type timestampl. "long form of time stamps
+
+data: start_time type timestampl,
+      end_time   type timestampl.
+
+start-of-selection.
+
+  "Select sales order data from database table
+*  get time stamp field start_time.
+  select
+        snwd_so~node_key,
+        snwd_so_i~node_key      as node_key_i,
+        snwd_so_i~currency_code as currency,
+        snwd_so_i~net_amount
+    from snwd_so
+    inner join snwd_so_i
+    on snwd_so~node_key = snwd_so_i~parent_key
+    order by snwd_so~node_key, node_key_i ascending
+    into corresponding fields of table @zit2
+    up to @p_record rows.
+
+  loop at zit2 into wa_so.
+    wa_so-tcurrency = 'EUR'.
+    call function 'CONVERT_AMOUNT_TO_CURRENCY'
+      exporting
+*       DATE             = SY-DATUM
+        foreign_currency = 'USD'
+        foreign_amount   = wa_so-net_amount
+        local_currency   = wa_so-tcurrency
+      importing
+        local_amount     = wa_so-net_amount_eur.
+    modify zit2 from wa_so.
+    clear wa_so.
+  endloop.
+*  sort zit2 by node_key node_key_i.
+*  get time stamp field end_time.
+*  zinterval1 = end_time - start_time.
+  write: /'end'.
+  ======================================================================================================================================
+  *&---------------------------------------------------------------------*
+*& Report ZPG_CDS_TASK2
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_cds_task2_so_cds.
+"Parameter declaration
+parameters:
+p_record type i default 500000.
+
+"Type declaration
+types: begin of  gty_sales_ord,
+         node_key       type snwd_node_key,
+         node_key_i     type snwd_node_key,
+         currency       type snwd_curr_code,
+         net_amount     type snwd_ttl_net_amount,
+         net_amount_eur type snwd_ttl_net_amount,
+         tcurrency      type snwd_curr_code,
+       end of gty_sales_ord.
+
+"Data declaration
+data: zit1 type table of gty_sales_ord.
+
+data: zinterval1 type timestampl. "long form of time stamps
+
+data: start_time type timestampl,
+      end_time   type timestampl.
+
+
+*start-of-selection.
+"Select sales order data from CDS view
+*  get time stamp field start_time.
+select *
+  from zddls_sales_ord
+  order by primary key
+  into corresponding fields of table @zit1
+  up to @p_record rows.
+*  get time stamp field end_time.
+*  zinterval1 = end_time - start_time.
+*  write: /'Time used for selecting SO data from CDS views: ', zinterval1.
+*  clear: start_time, end_time, zinterval1.
+write: /'end'.

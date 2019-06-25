@@ -1,0 +1,22 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_AUTH_FULL'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'CDS view with full access'
+define view ZCDS_AUTH_FULLACCESS as select from
+    scarr
+    {
+      key carrid,
+          carrname,
+          currcode,
+          url
+    };      
+===========================================================================================================================================
+@EndUserText.label: 'Demo full access control'
+@MappingRole: true
+define role Zcds_Role_Fullaccess {
+    grant
+        select
+            on
+                ZCDS_AUTH_FULLACCESS;
+}

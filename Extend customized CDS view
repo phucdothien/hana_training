@@ -1,0 +1,46 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_FLIGHT'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@AbapCatalog.viewEnhancementCategory: [#PROJECTION_LIST,#GROUP_BY]
+@EndUserText.label: 'CDS View for Flight'
+define view ZCDS_FLIGHT
+ as select from sflight as a
+{
+key a.carrid as FlgCarr,
+max( a.price ) as MaxPrice,
+min( a.price ) as MinPrice,
+avg( a.price ) as AvgPrice,
+sum( a.price ) as SumPrice
+//count(*) as TotalCount
+} group by a.carrid
+
+==========================================================================================================================================
+@AbapCatalog.sqlViewName: 'ZDDLS_FLIGHT_2'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'CDS View for Flight Ver 2'
+define view ZCDS_FLIGHT_2
+  as select from sflight as a
+{
+  key a.carrid       as FlgCarr,
+      max( a.price ) as MaxPrice,
+      min( a.price ) as MinPrice,
+      avg( a.price ) as AvgPrice,
+      sum( a.price ) as SumPrice,
+      count(*) as TotalCount 
+}
+group by
+  a.carrid
+
+=======================================================================================================================================
+@AbapCatalog.sqlViewAppendName: 'ZDDLS_FLIGHT_EXT'
+@EndUserText.label: 'Extend Flight CDS View'
+extend view ZCDS_FLIGHT with ZCDS_FLIGHT_EXT
+{
+  a.connid,
+  count( * ) as TotalCount
+}
+group by
+  a.connid

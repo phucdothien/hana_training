@@ -1,0 +1,23 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_PFCG_INH'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'CDS view with pfcg access'
+define view ZCDS_AUTH_INHERITED
+  as select from scarr
+{
+  key carrid,
+      carrname,
+      currcode,
+      url
+};
+
+===========================================================================================================================================
+@EndUserText.label: 'Demo access control with inherited authorization'
+@MappingRole: true
+define role Zcds_Role_Inh {
+    grant
+        select
+            on
+                zcds_auth_inherited
+                       inherit zcds_role_pfcg_lit or currcode = 'USD'; }
