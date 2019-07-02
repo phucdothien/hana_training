@@ -1,0 +1,76 @@
+@AbapCatalog.sqlViewName: 'ZDDLS_ASSO_DEMO1'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Demo CDS view association'
+define view ZCDS_ASSOCIATION_DEMO1
+  as select from spfli as c
+  association [0..1] to sflight as _sflight on  c.carrid = _sflight.carrid
+                                            and c.connid = _sflight.connid
+{
+  key carrid,
+  key connid,
+      distance,
+      distid,
+      _sflight.fldate // Make association public
+}
+
+============================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zhana_pg_association_demo1
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_association_demo1.
+
+select from zcds_association_demo1
+fields carrid,
+       connid,
+       sum( distance ) as distance
+       where carrid = 'AA' and
+       connid = '17'
+
+       group by carrid,
+                connid
+        into table @data(li_result).
+if sy-subrc eq 0.
+  cl_demo_output=>display_data( li_result ).
+endif.
+=========================================================================================================================================
+@AbapCatalog.sqlViewName: 'ZDDLS_ASSO_DEMO2'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Demo CDS view association 2'
+define view ZCDS_ASSOCIATION_DEMO2
+  as select from spfli as c
+  association [0..*] to sflight as _sflight on  c.carrid = _sflight.carrid
+                                            and c.connid = _sflight.connid
+{
+  key carrid,
+  key connid,
+      distance,
+      distid,
+      _sflight.fldate // Make association public
+}
+========================================================================================================================================
+*&---------------------------------------------------------------------*
+*& Report zhana_pg_association_demo2
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zhana_pg_association_demo2.
+
+select from zcds_association_demo2
+fields carrid,
+       connid,
+       sum( distance ) as distance
+       where carrid = 'AA' and
+       connid = '17'
+
+       group by carrid,
+                connid
+        into table @data(li_result).
+if sy-subrc eq 0.
+  cl_demo_output=>display_data( li_result ).
+endif.
